@@ -1,0 +1,158 @@
+//variáveis da bolinha PingPong
+let xPingPong = 300;
+let yPingPong = 200;
+let diametro = 16;
+let raio = diametro / 2 ;
+
+//velocidade da bolinha PingPong
+let velocidadeXPingPong = 7;
+let velocidadeYPingPong = -7;
+let raqueteComprimento = 10;
+let raqueteAltura = 90;
+
+//variáveis da raquete
+let xRaquete = 5;
+let yRaquete = 150;
+
+//variáveis do oponente
+let xRaqueteOponente = 585;
+let yRaqueteOponente = 150;
+let velocidadeYOponente;
+
+//erros do oponente
+let chanceDeErrar =0;
+
+let colidiu = false;
+
+//placar do jogo Smiths Pong
+let meusPontos = 0;
+let pontosOponente = 0;
+
+//sons do jogo
+let ponto;
+let raquetada;
+let trilha;
+
+function preload(){
+  trilha = loadSound("trilha.mp3");
+  raquetada = loadSound("raquetada.mp3");
+  ponto = loadSound("ponto.mp3");
+}
+
+function setup() {
+  createCanvas(600, 400);
+  trilha.loop();
+}
+
+function draw() {
+  background(0);
+  mostraPingPong();
+  movimentaPingPong();
+  verificaColisaoBorda();
+  mostraRaquete(xRaquete, yRaquete);
+  movimentaMinhaRaquete();
+  verificaColisaoRaquete();
+  verificaColisaoRaquete(xRaquete, yRaquete);
+  mostraRaquete(xRaqueteOponente, yRaqueteOponente);
+  movimentaRaqueteOponente();
+  verificaColisaoRaquete(xRaqueteOponente, yRaqueteOponente);
+  incluiPlacar();
+  marcaPonto();
+}
+
+function mostraPingPong(){
+  circle(xPingPong, yPingPong, diametro);
+}
+
+function movimentaPingPong(){
+  xPingPong += velocidadeXPingPong;
+  yPingPong += velocidadeYPingPong;
+}
+
+function verificaColisaoBorda(){
+  if (xPingPong + raio> width ||
+     xPingPong - raio< 0){
+    velocidadeXPingPong *= -1;
+  }
+  if (yPingPong + raio> height ||
+     yPingPong - raio < 0){
+    velocidadeYPingPong *= -1;
+  }
+}
+
+function mostraRaquete(x,y){
+  rect(x, y, raqueteComprimento, 
+      raqueteAltura);
+}
+
+function movimentaMinhaRaquete(){
+  if (keyIsDown(UP_ARROW)){
+    yRaquete -= 10;
+  }
+  if (keyIsDown(DOWN_ARROW)){
+    yRaquete += 10;
+  }
+}
+
+function verificaColisaoRaquete(){
+  if (xBolinha - raio < xRaquete + raqueteComprimento && yPingPong - raio < yRaquete + raqueteAltura && yBolinha + raio > yRaquete){
+    velocidadeXPingPong *= -1;
+  }
+}
+
+function verificaColisaoRaquete(x, y){
+  colidiu = collideRectCircle(xRaquete, yRaquete,raqueteComprimento,raqueteAltura,
+xPingPong,yPingPong,raio);
+  if (colidiu){
+    velocidadeXPingPong *= -1;
+    raquetada.play();
+  }
+}
+
+function movimentaRaqueteOponente(){
+  if (keyIsDown(87)){
+    yRaqueteOponente -= 10;
+  }
+  if (keyIsDown(83)){
+    yRaqueteOponente += 10;
+  }
+ }
+
+function incluiPlacar(){
+  stroke(255);
+  textAlign(CENTER);
+  textSize(16);
+  fill(color(233,150,122));
+  rect(150, 10, 40, 20);
+  fill(255);
+  text(meusPontos, 170, 26);
+  fill(color(233,150,122));
+  rect(450, 10, 40, 20);
+  fill(255);
+  text(pontosOponente, 470, 26);
+}
+
+function marcaPonto(){
+  if (xPingPong > 590){
+    meusPontos += 1;
+    ponto.play();
+  }
+  if (xPingPong < 10){
+    pontosOponente += 1;
+    ponto.play();
+  }
+}
+
+function calculaChanceDeErrar(){
+  if (pontosOponente >= meusPontos){
+    chanceDeErrar += 1
+    if (chanceDeErrar >= 39){
+    chanceDeErrar = 40
+    }
+  } else {
+    chanceDeErrar -= 1
+    if (chanceDeErrar <= 35){
+    chanceDeErrar = 35
+    }
+  }
+}
