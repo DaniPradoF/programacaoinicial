@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JEDAI Quest: O Escudo de Privacidade</title>
+    <!-- Fonte Pixel Art (Arcade) -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <!-- Fonte Secundária para leitura confortável -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #0b1221;
+            --panel-bg: #142036;
+            --neon-cyan: #00e5ff;
+            --neon-green: #00e676;
+            --neon-yellow: #ffea00;
+            --neon-red: #ff1744;
+            --text-color: #f0f4f8;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Nunito', sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: radial-gradient(circle at center, #142036 0%, #0b1221 100%);
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .arcade-font {
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        #game-wrapper {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* HUD: Cabeçalho com vidas */
+        #hud {
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+        }
+
+        .hud-item {
+            font-size: 0.9rem;
+            color: var(--neon-cyan);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Container Principal do Jogo */
+        #game-container {
+            background: var(--panel-bg);
+            border: 3px solid var(--neon-cyan);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.15);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            color: var(--neon-cyan);
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 0px #000;
+        }
+
+        h2.subtitle {
+            color: var(--neon-yellow);
+            text-align: center;
+            font-size: 0.8rem;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+        }
+
+        /* Caixa de Diálogo RPG */
+        .rpg-box {
+            display: flex;
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid #33415c;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .avatar {
+            font-size: 3rem;
+            background: #2a3b5c;
+            border: 2px solid var(--neon-cyan);
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .dialogue-text {
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        /* Input de Nome */
+        .input-group {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        input[type="text"] {
+            background: rgba(0,0,0,0.5);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 8px;
+            color: var(--neon-cyan);
+            padding: 15px;
+            font-size: 1rem;
+            width: 80%;
+            max-width: 300px;
+            text-align: center;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input[type="text"]:focus {
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+
+        /* Botões */
+        .btn-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        button {
+            background: #1d2d44;
+            color: var(--text-color);
+            border: 2px solid #33415c;
+            border-radius: 8px;
+            padding: 18px;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        button::before {
+            content: '>';
+            color: var(--neon-cyan);
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8rem;
+            margin-right: 15px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            border-color: var(--neon-cyan);
+            background: #2a3b5c;
+            transform: translateX(5px);
+        }
+
+        button:hover::before { opacity: 1; }
+
+        button.btn-center {
+            text-align: center;
+            justify-content: center;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8rem;
+            padding: 20px;
+        }
+        button.btn-center::before { display: none; }
+
+        /* Telas */
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeIn 0.5s ease-in-out; }
+
+        /* Feedback Visual */
+        #feedback-msg {
+            text-align: center;
+            font-weight: bold;
+            height: 25px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+
+        /* Animações */
+        .blink { animation: blink 1.5s step-end infinite; }
+        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; border-color: var(--neon-red) !important; }
+        
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+            40%, 60% { transform: translate3d(6px, 0, 0); }
+        }
+
+        /* Tela Final de Certificado */
+        #screen-certificate {
+            background: #0b1221;
+            border: 4px solid var(--neon-yellow);
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(255, 234, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cert-header {
+            color: var(--neon-yellow);
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            border-bottom: 2px dashed #33415c;
+            padding-bottom: 20px;
+        }
+
+        .cert-body {
+            margin: 30px 0;
+        }
+
+        .cert-name-display {
+            font-size: 2.5rem;
+            color: #fff;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin: 20px 0;
+            text-shadow: 2px 2px 10px rgba(0, 229, 255, 0.5);
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .cert-footer {
+            margin-top: 40px;
+            font-size: 0.8rem;
+            color: var(--neon-cyan);
+        }
+
+        .cert-seal {
+            font-size: 4rem;
+            margin-bottom: 10px;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        /* Estilo para impressão do Certificado */
+        @media print {
+            body { background: #0b1221; }
+            .no-print { display: none !important; }
+            #game-container { box-shadow: none; border: none; padding: 0; }
+            #screen-certificate { border: 4px solid var(--neon-yellow) !important; }
+        }
+
+        @media (max-width: 600px) {
+            .rpg-box { flex-direction: column; text-align: center; }
+            button { font-size: 0.9rem; padding: 15px; }
+            h1 { font-size: 1.4rem; }
+            .cert-name-display { font-size: 1.8rem; }
+            #screen-certificate { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-wrapper">
+        
+        <!-- HUD -->
+        <div id="hud" class="no-print">
+            <div class="hud-item arcade-font">FASE <span id="phase-display">1</span>/5</div>
+            <div class="hud-item arcade-font">ESCUDOS: <span id="lives-display">🛡️🛡️</span></div>
+        </div>
+
+        <!-- CONTAINER DO JOGO -->
+        <div id="game-container">
+            
+            <div id="feedback-msg" class="no-print"></div>
+
+            <!-- TELA INICIAL -->
+            <div id="screen-start" class="screen active no-print">
+                <h1 class="arcade-font">JEDAI Quest</h1>
+                <h2 class="subtitle arcade-font">O Escudo de Privacidade</h2>
+                
+                <div class="rpg-box">
+                    <div class="avatar">🤖</div>
+                    <div class="dialogue-text">
+                        "Olá, Guardião! O sistema detectou anomalias na matriz de dados. Preciso da sua ajuda para operar a Inteligência Artificial com segurança. Qual o seu nome de operador?"
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <input type="text" id="player-name" class="arcade-font" placeholder="SEU NOME" maxlength="25" autocomplete="off">
+                </div>
+
+                <button class="btn-center blink" style="color: var(--neon-cyan); border-color: var(--neon-cyan);" onclick="startGame()">PRESS START</button>
+            </div>
+
+            <!-- FASE 1 -->
+            <div id="screen-phase1" class="screen no-print">
+                <div class="rpg-box">
+                    <div class="avatar">🛡️</div>
+                    <div class="dialogue-text">
+                        "Fase 1! Você precisa resumir um contrato urgente para o diretor. Onde você insere esse texto?"
+                    </div>
+                </div>
+                <div class="btn-container">
+                    <button onclick="checkAnswer(1, false, 'Vazamento! Ferramentas gratuitas usam seus dados para treinar modelos abertos.')">Acesso uma IA gratuita que achei rápida no Google.</button>
+                    <button onclick="checkAnswer(1, true)">Abro o Gemini corporativo com minha conta de trabalho logada.</button>
+                </div>
+            </div>
+
+            <!-- FASE 2 -->
+            <div id="screen-phase2" class="screen no-print">
+                <div class="rpg-box">
+                    <div class="avatar">🕵️</div>
+                    <div class="dialogue-text">
+                        "Fase 2! O contrato tem CPFs e salários reais dos colaboradores. Como estruturamos o prompt?"
+                    </div>
+                </div>
+                <div class="btn-container">
+                    <button onclick="checkAnswer(2, true)">Anonimizo os CPFs e troco nomes por [Colaborador A] antes de enviar.</button>
+                    <button onclick="checkAnswer(2, false, 'Violação de Privacidade! Nunca envie PIIs (Dados Pessoais) sem tratamento.')">Colo o texto original para a IA não perder o contexto.</button>
+                </div>
+            </div>
+
+            <!-- FASE 3 -->
+            <div id="screen-phase3" class="screen no-print">
+                <div class="rpg-box">
+                    <div class="avatar">⚖️</div>
+                    <div class="dialogue-text">
+                        "Fase 3! A equipe quer usar IA para 'raspar' (scraping) dados de redes sociais de clientes sem avisá-los, para criar um modelo de vendas."
+                    </div>
+                </div>
+                <div class="btn-container">
+                    <button onclick="checkAnswer(3, false, 'Infração! A LGPD exige consentimento ou base legal clara para coletar dados.')">Aprovar. Dados públicos na internet podem ser coletados livremente.</button>
+                    <button onclick="checkAnswer(3, true)">Bloquear. Precisamos de consentimento e adequação à LGPD antes da coleta.</button>
+                </div>
+            </div>
+
+            <!-- FASE 4 -->
+            <div id="screen-phase4" class="screen no-print">
+                <div class="rpg-box">
+                    <div class="avatar">🎨</div>
+                    <div class="dialogue-text">
+                        "Fase 4! Você precisa gerar uma imagem para o marketing. O time sugeriu pedir no prompt para copiar exatamente o traço de um ilustrador famoso."
+                    </div>
+                </div>
+                <div class="btn-container">
+                    <button onclick="checkAnswer(4, true)">Recusar. Peço um estilo genérico (ex: cyberpunk) para evitar plágio.</button>
+                    <button onclick="checkAnswer(4, false, 'Violação de Direitos! Usar IA para copiar artistas específicos gera risco jurídico.')">Aceitar. A IA que gera, então não tem problema de direitos autorais.</button>
+                </div>
+            </div>
+
+            <!-- FASE 5 -->
+            <div id="screen-phase5" class="screen no-print">
+                <div class="rpg-box">
+                    <div class="avatar">🧠</div>
+                    <div class="dialogue-text">
+                        "Fase 5 (Boss)! O status report foi gerado lindamente pela IA, mas citou uma lei de mercado que você nunca ouviu falar."
+                    </div>
+                </div>
+                <div class="btn-container">
+                    <button onclick="checkAnswer(5, false, 'Alucinação! A IA erra com convicção. Você espalhou fake news corporativa.')">Confio e envio à diretoria. A IA processa dados melhor que humanos.</button>
+                    <button onclick="checkAnswer(5, true)">Pauso. Faço a curadoria e pesquiso se a lei existe antes de validar o texto.</button>
+                </div>
+            </div>
+
+            <!-- GAME OVER -->
+            <div id="screen-gameover" class="screen no-print">
+                <h1 class="arcade-font" style="color: var(--neon-red)">GAME OVER</h1>
+                <div class="rpg-box" style="border-color: var(--neon-red)">
+                    <div class="avatar">⚠️</div>
+                    <div class="dialogue-text" style="color: var(--neon-red)">
+                        "Seus Escudos de Privacidade falharam. Ocorreu um incidente de segurança e a corporação foi exposta."
+                    </div>
+                </div>
+                <button class="btn-center" style="color: var(--neon-red); border-color: var(--neon-red);" onclick="resetGame()">TENTAR NOVAMENTE</button>
+            </div>
+
+            <!-- VITÓRIA -->
+            <div id="screen-victory" class="screen no-print">
+                <h1 class="arcade-font" style="color: var(--neon-green)">SISTEMA SEGURO!</h1>
+                <div class="rpg-box" style="border-color: var(--neon-green)">
+                    <div class="avatar" style="border-color: var(--neon-green)">🏆</div>
+                    <div class="dialogue-text">
+                        "Excelente trabalho, Guardião! Você provou conhecer as diretrizes essenciais de Privacidade em IA. O sistema está protegido."
+                    </div>
+                </div>
+                
+                <button class="btn-center blink" style="color: var(--neon-yellow); border-color: var(--neon-yellow);" onclick="showCertificate()">> GERE O SEU CERTIFICADO</button>
+            </div>
+
+            <!-- CERTIFICADO FINAL -->
+            <div id="screen-certificate" class="screen">
+                <div class="cert-seal">🛡️</div>
+                <div class="cert-header arcade-font">
+                    CERTIFICADO DE APROVAÇÃO
+                </div>
+                
+                <div class="cert-body">
+                    <p>Certificamos que o(a) operador(a)</p>
+                    <div class="cert-name-display" id="final-cert-name">NOME AQUI</div>
+                    <p>concluiu o treinamento oficial <strong>JEDAI Quest</strong> e domina as 5 Diretrizes de Privacidade e Governança em IA.</p>
+                </div>
+                
+                <div class="cert-footer arcade-font">
+                    STATUS: APROVADO <br><br>
+                    <span style="color: var(--neon-green);">[ ACESSO SEGURO CONCEDIDO ]</span>
+                </div>
+
+                <div class="btn-container no-print" style="margin-top: 40px;">
+                    <button class="btn-center" style="color: var(--neon-cyan); border-color: var(--neon-cyan);" onclick="window.print()">🖨️ IMPRIMIR / SALVAR PDF</button>
+                    <button class="btn-center" style="color: #666; border-color: #666;" onclick="resetGame()">VOLTAR AO INÍCIO</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let lives = 2; 
+        let playerName = "";
+        let isTransitioning = false;
+
+        function updateHUD(phase) {
+            document.getElementById('lives-display').innerText = '🛡️'.repeat(lives);
+            if(phase <= 5) {
+                document.getElementById('phase-display').innerText = phase;
+            }
+        }
+
+        function hideAllScreens() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('feedback-msg').innerText = ''; 
+            document.getElementById('feedback-msg').style.color = '';
+            document.getElementById('game-container').classList.remove('shake');
+        }
+
+        function startGame() {
+            const nameInput = document.getElementById('player-name').value.trim();
+            if(nameInput === "") {
+                alert("Por favor, insira seu nome de operador!");
+                return;
+            }
+            
+            playerName = nameInput;
+            lives = 2; 
+            
+            document.getElementById('hud').style.display = 'flex';
+            updateHUD(1);
+            
+            hideAllScreens();
+            document.getElementById('screen-phase1').classList.add('active');
+        }
+
+        function checkAnswer(currentPhase, isCorrect, errorReason = '') {
+            if (isTransitioning) return; 
+            isTransitioning = true;
+
+            const feedbackDiv = document.getElementById('feedback-msg');
+
+            if (isCorrect) {
+                feedbackDiv.style.color = 'var(--neon-green)';
+                feedbackDiv.innerText = "✓ ACESSO LIBERADO: Ação Segura!";
+                
+                setTimeout(() => {
+                    advancePhase(currentPhase);
+                }, 1200);
+
+            } else {
+                lives--;
+                updateHUD(currentPhase);
+                
+                const container = document.getElementById('game-container');
+                container.classList.remove('shake');
+                void container.offsetWidth; 
+                container.classList.add('shake');
+                
+                feedbackDiv.style.color = 'var(--neon-red)';
+                feedbackDiv.innerText = "❌ " + errorReason;
+
+                if (lives <= 0) {
+                    setTimeout(() => {
+                        document.getElementById('hud').style.display = 'none';
+                        hideAllScreens();
+                        document.getElementById('screen-gameover').classList.add('active');
+                        isTransitioning = false;
+                    }, 2000);
+                } else {
+                    feedbackDiv.innerText += " (Escudo utilizado!)";
+                    setTimeout(() => {
+                        advancePhase(currentPhase);
+                    }, 2500);
+                }
+            }
+        }
+
+        function advancePhase(currentPhase) {
+            hideAllScreens();
+            const nextPhase = currentPhase + 1;
+            
+            if (nextPhase > 5) {
+                document.getElementById('hud').style.display = 'none';
+                document.getElementById('screen-victory').classList.add('active');
+            } else {
+                updateHUD(nextPhase);
+                document.getElementById('screen-phase' + nextPhase).classList.add('active');
+            }
+            isTransitioning = false;
+        }
+        
+        function showCertificate() {
+            hideAllScreens();
+            document.getElementById('hud').style.display = 'none';
+            document.getElementById('final-cert-name').innerText = playerName;
+            document.getElementById('screen-certificate').classList.add('active');
+        }
+
+        function resetGame() {
+            document.getElementById('hud').style.display = 'none';
+            document.getElementById('player-name').value = '';
+            hideAllScreens();
+            document.getElementById('screen-start').classList.add('active');
+            isTransitioning = false;
+        }
+    </script>
+</body>
+</html>
